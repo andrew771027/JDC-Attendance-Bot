@@ -833,6 +833,7 @@ jdc-attendance-bot/
 │   ├── attendance_parser.js
 │   ├── attendance_summary.js
 │   ├── sheet_repository.js
+│   ├── utility.js
 │   └── chat_client.js
 │
 ├── test/
@@ -841,6 +842,7 @@ jdc-attendance-bot/
 │   └── attendance_summary.test.js
 │
 ├── docs/
+│   ├── image.png
 │   └── architecture.md
 │
 ├── README.md

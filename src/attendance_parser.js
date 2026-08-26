@@ -1,185 +1,7 @@
-function getJdcPunchResponse(date, members){
-  const props = PropertiesService.getScriptProperties();
-  const chunkSize = props.getProperty("JDC_BATCH_SIZE");
-  const employeeIds = getEmployeeIds(members);
-  const batches = chunkArray(employeeIds, chunkSize);
-  const allData = [];
 
-  console.log(`Fetching JDC punch data: ` + `${employeeIds.length} members `+ `${batches.length} batch(es)`);
+import { normalizeEmptyString, toNullableNumber, toNumber } from './utility.js';
 
-  for (let i = 0; i < batches.length; i++){
-    const batch = batches[i];
-    const empIds = batch.join(',');
-    
-    console.log(`Punch batch ${i+1}/${batches.length}: ` + `${bacth.length} members`);
-
-    const response = fetchJdcPunchData(date, empIds);
-
-    if (response.status !== '0'){
-      throw new Error(`JDC Punch batch ${i+1} failed: ` + `${response.code} ${response.message}`);
-    }
-
-    const data = Array.isArray(response.data) ? response.data : [];
-    allData.push(...data);
-
-  }
-
-  return {
-    status: '0',
-    code: '000',
-    msg: 'success',
-    errtrace: '',
-    data: allData
-  };
-}
-
-function getJdcLeaveResponse(date, members){
-  const props = PropertiesService.getScriptProperties();
-  const chunkSize = props.getProperty("JDC_BATCH_SIZE");
-  const employeeIds = getEmployeeIds(members);
-  const batches = chunkArray(employeeIds, chunkSize);
-  const allData = [];
-
-  console.log(`Fetching JDC leave data: ` + `${employeeIds.length} members `+ `${batches.length} batch(es)`);
-
-  for (let i = 0; i < batches.length; i++){
-    const batch = batches[i];
-    const empIds = batch.join(',');
-    
-    console.log(`Leave batch ${i+1}/${batches.length}: ` + `${bacth.length} members`);
-
-    const response = fetchJdcLeaveData(date, empIds);
-
-    if (response.status !== '0'){
-      throw new Error(`JDC Leave batch ${i+1} failed: ` + `${response.code} ${response.message}`);
-    }
-
-    const data = Array.isArray(response.data) ? response.data : [];
-    allData.push(...data);
-
-  }
-
-  return {
-    status: '0',
-    code: '000',
-    msg: 'success',
-    errtrace: '',
-    data: allData
-  };
-}
-
-function fetchJdcPunchData(
-  date,
-  empIds
-){
-   const props = PropertiesService.getScriptProperties();
-   const baseUrl = props.getProperty("JDC_BASE_URL");
-   const payload = {
-    apiKey: props.getProperty('JDC_API_KEY'),
-    userid: props.getProperty('JDC_USER_ID'),
-    password: props.getProperty('JDC_PASSWORD'),
-    date_st: date,
-    date_ed: date,
-    emp_id: empIds,
-    rtn_shift_info: 'Y',
-   
-    //Important:
-    //also return scheduled records
-    //without punch data
-    rtn_all_records_by_shift: 'Y'
-   };
-
-  const response = UrlFetchApp.fetch(
-    baseUrl + '/WebService/atd/get_AtdPunchData.ashx',
-    {
-      method: 'post',
-      payload: payload,
-      muteHttpExceptions: true
-    }
-  );
-
-  const body = JSON.parse(response.getContentText());
-
-  if (body.status !== '0'){
-    throw new Error(`JDC Punch API error: ${body.msg}`);
-  }
-
-  return body;
-
-}
-
-function fetchJdcLeaveData(
-  date,
-  empIds,
-){
-  const props = PropertiesService.getScriptProperties();
-
-  const baseUrl = props.getProperty('JDC_BASE_URL');
-
-  const apiKey = props.getProperty('JDC_API_KEY');
-
-  const userId = props.getProperty('JDC_USER_ID');
-
-  const password = props.getProperty('JDC_PASSWORD');
-
-  if(!baseUrl){
-    throw new Error("JDC_BASE_URL is not configured");
-  }
-
-  if(!apiKey){
-    throw new Error("JDC_API_KEY is not configured");
-  }
-
-  if(!userId){
-    throw new Error("JDC_USER_ID is not configured");
-  }
-
-  if(!password){
-    throw new Error("JDC_PASSWORD is not configured");
-  }
-
-  const url = baseUrl + '/WebService/atd/get_EmpLeaveData2.ashx';
-
-  const payload = {
-    apiKey: apiKey,
-    userid: userId,
-    password: password,
-    date_st: date,
-    date_ed: date,
-
-    //2 = effective leave;
-    data_status: '2',
-
-    //employID "W001,W002,W003"
-    emp_id: empIds
-  }
-
-  const resposne = UrlFetchApp.fetch(
-    url,
-    {
-      method: 'post',
-      payload: payload,
-      muteHttpException: true
-    }
-  );
-
-  const httpStatus = resposne.getResponseCode();
-  const bodyText = resposne.getContentText();
-
-  if (httpStatus < 200 || httpStatus >=300){
-    throw new Error("JDC Leave API Http error: " + httpStatus + " " + bodyText);
-  }
-
-  const body = JSON.parse(bodyText);
-
-  if (body.status !== '0'){
-    throw new Error('JDC Leave API error: ' + body.code + ' ' + body.msg);
-  }
-
-  return body
-}
-
-function parsePunchData(response){
+export function parsePunchData(response){
   if (!response){
     throw new Error("Punch response is empty.");
   }
@@ -259,13 +81,13 @@ function parsePunchData(response){
   }));
 }
 
-function parseLeaveData(response){
+export function parseLeaveData(response){
   if(!response){
     throw new Error("Leave resposne is empty");
   }
 
   if(response.status !== '0'){
-    throw new Error("Invalid LDC Leave response: " + response.code + " " + response.msg);
+    throw new Error("Invalid JDC Leave response: " + response.code + " " + response.msg);
   }
 
   const data = Array.isArray(response.data) ? response.data : [];
@@ -351,7 +173,7 @@ function buildLeaveIndex(leaveRecords){
   return index;
 }
 
-function buildDailyAttendance(
+export function buildDailyAttendance(
   date,
   members,
   punchRecords,
@@ -532,37 +354,5 @@ function parseJdcDateTime(value){
 
 function overlaps(startA, endA, startB, endB){
   return (startA < endB && endA > startB);
-}
-
-function getEmployeeIds(members) {
-  return members
-    .map(member => member.wiproId)
-    .filter(id => Boolean(id));
-}
-
-
-function chunkArray(items, chunkSize) {
-  if (chunkSize <= 0) {
-    throw new Error(
-      'chunkSize must be greater than 0'
-    );
-  }
-
-  const chunks = [];
-
-  for (
-    let i = 0;
-    i < items.length;
-    i += chunkSize
-  ) {
-    chunks.push(
-      items.slice(
-        i,
-        i + chunkSize
-      )
-    );
-  }
-
-  return chunks;
 }
 

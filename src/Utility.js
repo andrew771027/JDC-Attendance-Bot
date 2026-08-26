@@ -1,4 +1,4 @@
-function createHeaderIndex(headers){
+export function createHeaderIndex(headers){
   const index = {};
   
   headers.forEach((header, i) => {
@@ -10,14 +10,14 @@ function createHeaderIndex(headers){
 
 
 
-function normalizeEmptyString(value){
+export function normalizeEmptyString(value){
   if (value === undefined || value === null || value === ''){
     return null;
   }
   return String(value);
 }
 
-function toNullableNumber(value){
+export function toNullableNumber(value){
   if (value === undefined || value === null || value === ''){
     return null;
   }
@@ -31,7 +31,7 @@ function toNullableNumber(value){
   return number;
 }
 
-function toNumber(value){
+export function toNumber(value, defaultValue = 0){
   if (value === undefined || value === null || value == ""){
     return defaultValue;
   }
@@ -46,7 +46,7 @@ function toNumber(value){
 }
 
 
-function getToday(){
+export function getToday(){
   const today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
   return today
 }

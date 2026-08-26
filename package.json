@@ -1,0 +1,12 @@
+{
+  "name": "jdc-attendance-bot",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --format=iife --global-name=JdcAttendanceBot --outfile=dist/Code.js --footer:js=\"function myFunction() { return JdcAttendanceBot.myFunction(); }\"",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

@@ -106,6 +106,34 @@ Detailed architecture documentation:
 docs/architecture.md
 ```
 
+## Module boundaries
+
+The source code uses JavaScript ES modules so that every dependency is explicit.
+
+| Module | Responsibility |
+| --- | --- |
+| `main.js` | Orchestrates the end-to-end workflow only. |
+| `query_planner.js` | Selects employee IDs and splits them into request batches. |
+| `jdc_client.js` | Calls the JDC punch and leave APIs. |
+| `attendance_parser.js` | Normalizes JDC responses and builds daily attendance records. |
+| `attendance_summary.js` | Groups attendance and calculates team summaries. |
+| `sheet_repository.js` | Reads and writes Google Sheets. |
+| `chat_client.js` | Formats and sends Google Chat messages. |
+| `utility.js` | Contains small, domain-independent conversion helpers. |
+
+Google Apps Script does not execute native `import`/`export` statements directly.
+The build command bundles the module graph into `dist/Code.js` and exposes the
+global `myFunction` entry point required by Apps Script triggers.
+
+```bash
+npm install
+npm test
+npm run build
+```
+
+Upload the generated `dist/Code.js` to Google Apps Script together with the
+project manifest. Do not upload the individual files in `src/` directly.
+
 ---
 
 # Project Structure
@@ -120,6 +148,7 @@ jdc-attendance-bot/
 │   ├── attendance_parser.js
 │   ├── attendance_summary.js
 │   ├── sheet_repository.js
+│   ├── utility.js
 │   └── chat_client.js
 │
 ├── test/
@@ -128,6 +157,7 @@ jdc-attendance-bot/
 │   └── attendance_summary.test.js
 │
 ├── docs/
+│   ├── image.png
 │   └── architecture.md
 │
 ├── README.md

@@ -1,4 +1,4 @@
-function buildChatMessage(
+export function buildChatMessage(
   summary,
   attendance
 ){
@@ -8,7 +8,7 @@ function buildChatMessage(
 
   const noPunchMembers = attendance.filter(record => record.amStatus === "NO_PUNCH" && record.pmStatus === "NO_PUNCH");
 
-  const unknownMembers = attendance.filter(record => record.amStart === "UNKNOWN" || record.pmStatus === "UNKNOWN");
+  const unknownMembers = attendance.filter(record => record.amStatus === "UNKNOWN" || record.pmStatus === "UNKNOWN");
 
   const lines = [
     '📊 *Daily Attendance Report*',
@@ -112,7 +112,7 @@ function appendMissingPunchSection(
   }
 }
 
-function postAttendanceToChat(
+export function postAttendanceToChat(
   chatSpaceId,
   summary,
   attendance
